@@ -3,6 +3,8 @@
 
 //! Decode policy extension point, independent of prefill affinity.
 
+pub mod joint;
+
 use crate::config::DecodePolicyKind;
 use crate::policies::admission::{
     compare_decode_engines, resolve_decode, CandidateDomain, DecisionReason, FinalDecision,
