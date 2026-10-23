@@ -546,5 +546,11 @@ POSITIONAL_FIELD_ORDER = (
     "paged_experts_num_resident",
     "enable_nvidia_megakernel",
     "enable_megamoe_for_layernorm_sp",
+    "mlfq_role",
+    "mlfq_endpoint",
+    "mlfq_quanta_ms",
+    "mlfq_aging_ms",
+    "mlfq_host_memory_gb",
+    "mlfq_timeout_s",
 )
 # fmt: on

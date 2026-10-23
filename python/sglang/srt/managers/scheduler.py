@@ -3260,6 +3260,8 @@ class Scheduler(
             recv_req.pp_prefetch_ticketed = bool(self._prefetch_kvcache(req))
             self.tree_cache.bind_prefetch_ticket(req.rid, recv_req.pp_prefetch_ticketed)
 
+        if hasattr(self, "mlfq_runtime") and self.mlfq_runtime.reject_unsupported(req):
+            return
         added_to_grammar_queue = self.grammar_manager.process_req_with_grammar(req)
         if not added_to_grammar_queue:
             self._add_request_to_queue(req)
@@ -5547,6 +5549,8 @@ class Scheduler(
         return inflight_batches
 
     def abort_request(self, recv_req: AbortReq):
+        if hasattr(self, "mlfq_runtime"):
+            self.mlfq_runtime.abort(recv_req)
         if (chunked_req := self.chunked_req) is not None:
             if recv_req.abort_all or chunked_req.rid.startswith(recv_req.rid):
                 self._pending_chunked_abort_req = chunked_req
@@ -6086,6 +6090,11 @@ def dispatch_event_loop(scheduler: Scheduler):
 
 
 def _dispatch_event_loop_once(scheduler: Scheduler):
+    if get_disagg().mlfq_role != "off":
+        from sglang.srt.disaggregation.mlfq import MLFQRuntime
+
+        scheduler.mlfq_runtime = MLFQRuntime(scheduler)
+        return scheduler.mlfq_runtime.run()
     # A PD role switch can select a different loop on the same scheduler.
     scheduler.enable_continuous_input_polling = False
     scheduler.enable_skip_finishing_decode = False

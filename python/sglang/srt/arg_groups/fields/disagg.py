@@ -23,6 +23,29 @@ class Disagg(msgspec.Struct):
 
     _NS_PATH = "disagg"
 
+    mlfq_role: A[
+        Literal["off", "prefill", "decode"],
+        "Experimental host-backed 1P-nD MLFQ role (separate from native PD).",
+    ] = "off"
+    mlfq_endpoint: A[str, "Trusted ZMQ endpoint: prefill binds, decode connects."] = (
+        "tcp://127.0.0.1:19000"
+    )
+    mlfq_quanta_ms: A[
+        List[float],
+        Arg(
+            help="Three decode time quanta in milliseconds.", type_parser=json_list_type
+        ),
+    ] = [20.0, 40.0, 80.0]
+    mlfq_aging_ms: A[
+        float, "Promote Q1/Q2 requests to Q0 after this many queued milliseconds."
+    ] = 1000.0
+    mlfq_host_memory_gb: A[
+        float, "P host checkpoint budget, reserved for each admitted request's peak KV."
+    ] = 4.0
+    mlfq_timeout_s: A[
+        float, "Fail requests whose decode worker stops reporting progress."
+    ] = 120.0
+
     # Decoupled speculative decoding: draft and verify run as
     # separate engines, currently connected by a ZMQ IPC mesh.
     decoupled_spec_bind_endpoint: A[
